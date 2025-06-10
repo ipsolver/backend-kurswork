@@ -416,9 +416,6 @@ function renderMethodChart(methodData) {
     });
 }
 
-
-
-
 let logsChartInstance = null;
 
 function renderLogsChart(data) {
@@ -822,6 +819,12 @@ function renderOrderCards(orderList) {
             card.appendChild(doneBtn);
             card.appendChild(rejectBtn);
         }
+        if (order.discount && order.discount > 0) {
+            let badge = document.createElement('div');
+            badge.className = 'discount-badge';
+            badge.innerText = `Знижка: ${order.discount}%`;
+            card.appendChild(badge);
+        }
 
         wrapper.appendChild(card);
     });
@@ -841,7 +844,7 @@ async function updateOrderStatus(id, status) {
     if (result.success)
         loadOrders();
     else
-        alert('Помилка при оновленні статусу');
+        alert(result.message || 'Помилка при оновленні статусу');
 }
 
 function showOrderModal(order) {
@@ -857,6 +860,7 @@ function showOrderModal(order) {
         <strong>Статус:</strong> ${order.status}<br>
         <strong>Створено:</strong> ${order.created_at}<br>
         <strong>На коли:</strong> ${order.deadline}
+        ${order.discount && order.discount > 0 ? `<div class="discount-badge">Знижка: ${order.discount}%</div><br>` : ''}
         ${order.accepted_at ? `<br><strong>Прийнято:</strong> ${order.accepted_at}<br>` : ''}
         ${order.completed_at ? `<strong>Готово:</strong> ${order.completed_at}<br>` : ''}
     `;

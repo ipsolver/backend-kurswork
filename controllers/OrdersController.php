@@ -277,15 +277,78 @@ class OrdersController extends Controller
             if (!$id || !$status) 
             {
                 echo json_encode(['success' => false]);
-                return;
+                exit;
+            }
+            ///////////////////////////
+            $db = Core::get()->db;
+
+        if ($status === 'Прийнято') 
+        {
+            $currentOrder = $db->select('orders', '*', ['id' => $id])[0] ?? null;
+
+            if (!$currentOrder) 
+            {
+                echo json_encode(['success' => false, 'message' => 'Замовлення не знайдено']);
+                exit;
             }
 
+            $newStart = new \DateTime();
+            $deadline = new \DateTime($currentOrder['deadline']);
+            $newEnd = (clone $deadline)->modify('+3 days');
+
+            $acceptedOrders = $db->select('orders', '*', [
+                'status' => 'Прийнято',
+            ]);
+
+            $overlappingCount = 0;
+            foreach ($acceptedOrders as $order) 
+            {
+                if (empty($order['accepted_at'])) 
+                    continue;
+
+                $start = new \DateTime($order['accepted_at']);
+                $end = new \DateTime($order['deadline']);
+                $end->modify('+3 days');
+
+                // перевірка перетину
+                if ($newStart <= $end && $start <= $newEnd)
+                    $overlappingCount++;
+            }
+
+            if ($overlappingCount >= 2) 
+            {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Неможливо прийняти більше 2 замовлень з перекриванням у часі'
+                ]);
+                exit;
+            }
+        }
+            //////////////////////////
             $fields = ['status' => $status];
 
             if ($status === 'Прийнято')
                 $fields['accepted_at'] = date('Y-m-d H:i:s');
             elseif ($status === 'Готово')
-                $fields['completed_at'] = date('Y-m-d H:i:s');
+                {
+                    $completedAt = new \DateTime();
+                    $fields['completed_at'] = $completedAt->format('Y-m-d H:i:s');
+
+                    $currentOrder = $db->select('orders', '*', ['id' => $id])[0] ?? null;
+
+                    if ($currentOrder) 
+                    {
+                        $deadline = new \DateTime($currentOrder['deadline']);
+                        if ($completedAt > $deadline) 
+                        {
+                            $diffDays = (int)$deadline->diff($completedAt)->format('%a');
+                            $discount = $diffDays * 5;
+                            $fields['discount'] = min($discount, 100);
+                        }
+                        else
+                            $fields['discount'] = 0;
+                    }
+                }
 
 
             $success = Core::get()->db->update('orders', $fields, ['id' => $id]);

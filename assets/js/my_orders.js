@@ -60,7 +60,8 @@ function loadFilteredOrders(page = 1) {
 
             if (!Array.isArray(data.orders) || data.orders.length === 0) {
                 container.innerHTML = '<p>Немає замовлень із цим статусом</p>';
-            } else {
+            }
+            else {
                 data.orders.forEach(order => {
                     let desc = order.description.length > 12
                         ? order.description.substring(0, 12) + '...'
@@ -74,9 +75,14 @@ function loadFilteredOrders(page = 1) {
                         ? `<button class="delete-order-btn" data-id="${order.id}">Видалити</button>`
                         : '';
 
+                    let discountBadge = '';
+                    if (order.discount && order.discount > 0)
+                        discountBadge = `<div class="discount-badge">Знижка: ${order.discount}%</div>`;
+
                     container.innerHTML += `
                         <div class="order-card" data-order-id="${order.id}">
                             ${imageHtml}
+                            ${discountBadge}
                             <div class="order-details">
                                 <p class="order-desc">${desc}</p>
                                 <p><strong>До:</strong> ${order.deadline}</p>
@@ -142,6 +148,7 @@ function showOrderModal(order) {
         <strong>Статус:</strong> ${order.status}<br>
         <strong>Створено:</strong> ${order.created_at}<br>
         <strong>На коли:</strong> ${order.deadline}
+        ${order.discount && order.discount > 0 ? `<div class="discount-badge">Знижка: ${order.discount}%</div><br>` : ''}
         ${order.accepted_at ? `<br><strong>Прийнято:</strong> ${order.accepted_at}<br>` : ''}
         ${order.completed_at ? `<strong>Готово:</strong> ${order.completed_at}<br>` : ''}
     `;
