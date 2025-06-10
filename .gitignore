@@ -1,0 +1,27 @@
+# Загальні налаштування
+node_modules/
+vendor/
+.env
+*.log
+*.cache
+
+# Файли та папки, створені редакторами коду
+.idea/
+.vscode/
+
+# Файли та папки для кешування та тимчасового збереження
+tmp/
+.DS_Store
+
+# Згенеровані файли
+dist/
+build/
+
+# Файли, пов'язані з Composer
+composer.lock
+
+# Файли, пов'язані з NPM/Yarn
+package-lock.json
+yarn.lock
+
+assets/ckeditor/
