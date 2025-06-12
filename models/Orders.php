@@ -15,6 +15,12 @@ use core\OrdersImageUploader;
     * @property int $genre_id ID жанру
     * @property timestamp $created_at Дата створення замовлення
     * @property enum $status Статус замовлення (Обробка, Прийнято, Відхилено, Готово)
+    * @property int|null $item_id ID картини (якщо замовлення схоже)
+    * @property int|null $glass_type Тип скла
+    * @property float $width_cm Ширина
+    * @property float $height_cm Висота
+    * @property int $thickness_mm Товщина скла в мм
+    * @property int $quantity Кількість копій
     * @property timestamp $accepted_at Час взяття замовлення
     * @property timestamp $completed_at Час виконання замовлення
     */
@@ -88,6 +94,23 @@ class Orders extends Model
         );
         return $result[0]['count'] ?? 0;
     }
+
+    public static function countOrdersLast($userId)
+    {
+        $dayAgo = date('Y-m-d H:i:s', strtotime('-24 hours'));
+
+        $result = Core::get()->db->select(
+            self::$tableName,
+            ['COUNT(*) AS count'],
+            [
+                'user_id' => $userId,
+                'created_at >=' => $dayAgo
+            ]
+        );
+
+        return $result[0]['count'] ?? 0;
+    }
+
 
 
 

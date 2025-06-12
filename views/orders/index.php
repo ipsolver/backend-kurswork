@@ -25,11 +25,22 @@
     font-size: 28px;
     cursor: pointer;
 }
+.discount-badge {
+    background-color: #ff6347;
+    color: white;
+    font-weight: bold;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+}
+
 </style>
-<h1 class="mb-4">Мої замовлення</h1>
+<h1 class="mb-4">Мої заявки</h1>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <a href="/crystal/orders/add"><button class="btn btn-success">Створити замовлення</button></a>
+    <a href="/crystal/orders/add"><button class="btn btn-success">Створити запит на роботу</button></a>
 
     <select id="status-filter" class="form-select w-auto">
         <option value="">— Усі статуси —</option>
@@ -44,7 +55,7 @@
     <div id="orders-container" class="orders-grid"></div>
     <div class="pagination-wrapper mt-4"></div>
 </div>
-
+<div style="margin-bottom: 255px;"></div>
 <div id="orderModal" class="modal-custom">
   <div class="modal-content-custom">
     <span onclick="closeOrderModal()" class="modal-close">&times;</span>

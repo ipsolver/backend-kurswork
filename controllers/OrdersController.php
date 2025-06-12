@@ -48,7 +48,9 @@ class OrdersController extends Controller
         $username = $currentUser['username'];
         $categories = Categories::getCategories();
         $genres = Genres::getAll();
-
+        $glass_types = GlassTypes::getAll();
+        $item_name = null;
+        $item_code = null;
 
         $itemData = null;
         if (isset($_GET['from_item'])) 
@@ -58,14 +60,21 @@ class OrdersController extends Controller
 
             if ($itemData) 
             {
+                if (!empty($itemData['published_at']) && strtotime($itemData['published_at']) > time()) 
+                {
+                    return $this->redirect('/crystal/items');
+                }
+                $item_name = $itemData['title'];
+                $item_code = $itemData['code'];
+
+
                 $mainImage = ItemImages::getMainImage($itemId);
-                $preDescription = "Подобається картина \"{$itemData['title']}\" (код: {$itemData['code']})";
+                $preDescription = "Подобається ця картина";
 
                 if (!empty($itemData['glass_id'])) 
                 {
                     $glass = Glass::getGlass($itemData['glass_id']);
                     $glass_type = GlassTypes::findById($glass['glass_type']);
-                    $preDescription .= ", розміри: {$glass['length_cm']}×{$glass['width_cm']} см, скло: {$glass_type['name']} ({$glass['name']})";
                 }
 
                 $this->template->setParams([
@@ -73,6 +82,12 @@ class OrdersController extends Controller
                     'preCategoryId' => $itemData['category_id'],
                     'preGenreId' => $itemData['genre_id'],
                     'preImagePath' => $mainImage['path'] ?? null,
+                    'preGlassType' => $glass_type ?? null,
+                    'preWidth' => $glass['width_cm'] ?? null,
+                    'preHeight' => $glass['length_cm'] ?? null,
+                    'preThickness' => $glass['thickness_mm'] ?? null,
+                    'preGlassType' => $glass['glass_type'] ?? null,
+                    'item_id' => $itemId
                 ]);
             }
 
@@ -86,12 +101,25 @@ class OrdersController extends Controller
             $deadline = $this->post->deadline;
             $category_id = strlen($this->post->category_id) > 0 && $this->post->category_id !== '' ? (int)$this->post->category_id : null;           
             $genre_id = strlen($this->post->genre_id) > 0 && $this->post->genre_id !== '' ? (int)$this->post->genre_id : null;
-            
+            $ordersCount = Orders::countOrdersLast($currentUser['id']);
+            $glass_type = strlen($this->post->glass_type) > 0 && $this->post->glass_type !== '' ? (int)$this->post->glass_type : null;
+            $width_cm = strlen($this->post->width_cm) >0 &&  $this->post->width_cm !== '' ? floatval($this->post->width_cm) : null;
+            $height_cm = strlen($this->post->height_cm) >0 && $this->post->height_cm !== ''  ? floatval($this->post->height_cm) : null;
+            $thickness_mm = strlen($this->post->thickness_mm) >0 && $this->post->thickness_mm !== ''  ? intval($this->post->thickness_mm) : null;
+            $item_id = strlen($this->post->item_id) >0 && $this->post->item_id !== '' ? (int)$this->post->item_id : null;
+
             if (empty($description) || empty($deadline))
                 $this->addErrorMessage("Опис і дата дедлайну обов’язкові");
             if (strtotime($deadline) < time())
-                    $this->addErrorMessage("Дата дедлайну не може бути в минулому");
-
+                $this->addErrorMessage("Дата дедлайну не може бути в минулому");
+            if(empty($genre_id))
+                $this->addErrorMessage("Оберіть жанр");
+            if($ordersCount >=3)
+                $this->addErrorMessage("Ви зробили більше 3 замовлень за добу, відпочиньте");
+            if ($width_cm <= 0 || $height_cm <= 0)
+                $this->addErrorMessage("Ширина і висота мають бути більше нуля");
+            if ($thickness_mm <= 0)
+                $this->addErrorMessage("Товщина скла має бути більше нуля");
 
             if (!$this->isErrorMessageExist()) 
             {
@@ -102,7 +130,14 @@ class OrdersController extends Controller
                     'description' => $description,
                     'category_id' => $category_id,
                     'genre_id' => $genre_id,
-                    'deadline' => $deadline
+                    'deadline' => $deadline,
+                    'glass_type' => $glass_type,
+                    'width_cm' => $width_cm,
+                    'height_cm' => $height_cm,
+                    'thickness_mm' => $thickness_mm,
+                    'item_id' => $item_id,
+                    'item_name' => $item_name,
+                    'item_code' => $item_code
                 ]
                 );
 
@@ -142,7 +177,8 @@ class OrdersController extends Controller
         }
             $this->template->setParams([
                 'categories' => $categories,
-                'genres' => $genres
+                'genres' => $genres,
+                'glass_types' => $glass_types
             ]);
             return $this->render();
     }

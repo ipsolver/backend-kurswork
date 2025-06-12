@@ -57,7 +57,7 @@ $currentUser = Users::getCurrentUser();
                     </span>
                         <li><a class="dropdown-item" href="/crystal/profile">Мій профіль</a></li>
                     <?php if($currentUser['role'] != "admin"): ?>
-                        <li><a class="dropdown-item" href="/crystal/orders">Мої замовлення</a></li>
+                        <li><a class="dropdown-item" href="/crystal/orders">Мої заявки</a></li>
                     <?php endif; ?>
                         <li><a class="dropdown-item" href="/crystal/profile/settings">Налаштування</a></li>
                         <li><hr class="dropdown-divider"></li>

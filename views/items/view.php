@@ -145,20 +145,20 @@ use models\Users;
       <p><small><s><?= number_format($item['tarif'], 2, '.', ' ') ?> грн</s> — знижка <?= $item['discount'] ?>%</small></p>
     <?php endif ?>
 
-<!--  Замовлення -->
+<!--  Заявки -->
 
 <?php if (Users::isUserLogged()): ?>
   <?php if (Users::getCurrentUser()['role'] != "admin"): ?>
     <div class="order-actions">
       <a class="btn btn-outline-success" 
-         href="/crystal/orders/add?from_item=<?= $item['id'] ?>">Замовити схожу</a>
+         href="/crystal/orders/add?from_item=<?= $item['id'] ?>">Взяти за основу для заявки</a>
       <a class="btn btn-outline-primary" 
-         href="/crystal/orders/add">Особисте замовлення</a>
+         href="/crystal/orders/add">Особиста заявка</a>
     </div>
   <?php endif ?>
 <?php else: ?>
-  <p style="text-align: center; margin-top: 0.5rem;">
-    <em>Щоб зробити замовлення, потрібно <a href="/crystal/profile/login">авторизуватись</a></em>
+  <p style="text-align: center; margin-top: -25%;">
+    <em>Щоб подати заявку художнику, потрібно <a href="/crystal/profile/login">авторизуватись</a></em>
   </p>
 <?php endif ?>
 

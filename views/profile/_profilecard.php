@@ -25,7 +25,7 @@ $currentUser = Users::getCurrentUser();
         <div class="ms-auto d-flex gap-2">
             <?php if($currentUser['role'] != "admin"): ?>
             <a href="/crystal/orders/" class="btn btn-outline-primary">
-                Мої замовлення
+                Мої заявки
             </a>
             <?php endif ?>
             <a href="/crystal/profile/settings" class="btn btn-outline-secondary">

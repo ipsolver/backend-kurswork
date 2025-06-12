@@ -9,8 +9,52 @@ class Router
     {
         $this->route = $route ?: 'home/index';
     }
+
+    // public function run()
+    // {
+    //     $this->route = trim($this->route, "/ \t\n\r\0\x0B"); 
+    //     $parts = explode('/', $this->route);
+    //     if (strtolower($this->route) === 'index') 
+    //     {
+    //         header('Location: /crystal/home');
+    //         exit;
+    //     }
+    //     if(strlen($parts[0]) == 0)
+    //     {
+    //         $parts[0] = "home";
+    //         $parts[1] = "index";
+    //     }
+    //     \core\Core::get()->moduleName = $parts[0];
+    //     \core\Core::get()->actionName = $parts[1] ?? 'index';
+    //     $controller = 'controllers\\' . ucfirst($parts[0]) . 'Controller';
+    //     $method = 'action' . ucfirst($parts[1] ?? 'Index');
+    //     if (class_exists($controller)) 
+    //     {
+    //         $controllerObject = new $controller();
+    //         Core::get()->controllerObject = $controllerObject;
+    //         if (method_exists($controllerObject, $method)) 
+    //         {
+    //             if (!$controllerObject->beforeAction($parts[1] ?? 'index'))
+    //                 return;
+                
+    //             array_splice($parts, 0, 2);
+
+    //             return $params = $controllerObject->$method($parts);
+    //         } 
+    //         else 
+    //         {
+    //             $this->error(404);
+    //         }
+    //     } 
+    //     else 
+    //     {
+    //         $this->error(404);
+    //     }
+    // }
+
     public function run()
-    {
+{
+    try {
         $this->route = trim($this->route, "/ \t\n\r\0\x0B"); 
         $parts = explode('/', $this->route);
         if (strtolower($this->route) === 'index') 
@@ -23,21 +67,23 @@ class Router
             $parts[0] = "home";
             $parts[1] = "index";
         }
+
         \core\Core::get()->moduleName = $parts[0];
         \core\Core::get()->actionName = $parts[1] ?? 'index';
         $controller = 'controllers\\' . ucfirst($parts[0]) . 'Controller';
         $method = 'action' . ucfirst($parts[1] ?? 'Index');
+
         if (class_exists($controller)) 
         {
             $controllerObject = new $controller();
             Core::get()->controllerObject = $controllerObject;
+
             if (method_exists($controllerObject, $method)) 
             {
                 if (!$controllerObject->beforeAction($parts[1] ?? 'index'))
                     return;
-                
-                array_splice($parts, 0, 2);
 
+                array_splice($parts, 0, 2);
                 return $params = $controllerObject->$method($parts);
             } 
             else 
@@ -48,9 +94,14 @@ class Router
         else 
         {
             $this->error(404);
-            //!!!! return зробити!
         }
+    } catch (\Throwable $e) {
+        // Для будь-якої помилки — лог + помилка 500
+        error_log("Fatal error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+        $this->error(500);
     }
+}
+
 
 public function done()
 {
@@ -65,7 +116,7 @@ public function error($code)
 
         $errorPage = "views/errors/{$code}.php";
 
-        if (file_exists($errorPage)) 
+        if (file_exists($errorPage))
         {
             include $errorPage;
         } 

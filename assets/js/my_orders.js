@@ -63,9 +63,12 @@ function loadFilteredOrders(page = 1) {
             }
             else {
                 data.orders.forEach(order => {
-                    let desc = order.description.length > 12
-                        ? order.description.substring(0, 12) + '...'
-                        : order.description;
+                    let desc = order.item_name
+                        ? order.item_name
+                        : (order.description.length > 12
+                            ? order.description.substring(0, 12) + '...'
+                            : order.description);
+
 
                     let imageHtml = order.image
                         ? `<img src="${order.image}" alt="зображення замовлення" class="order-image">`
@@ -143,6 +146,8 @@ function showOrderModal(order) {
         <strong>Телефон:</strong> ${order.user_phone}<br>
         ${order.category_name ? `<strong>Категорія:</strong> ${order.category_name}<br>` : ''}
         ${order.genre_name ? `<strong>Жанр:</strong> ${order.genre_name}<br>` : ''}
+         ${order.item_name ? `<strong>Картина:</strong> ${order.item_name}<br>` : ''}
+        ${order.item_code ? `<strong>Код:</strong> ${order.item_code}<br>` : ''}
         <strong>Опис:</strong><br>
         <p>${order.description}</p>
         <strong>Статус:</strong> ${order.status}<br>

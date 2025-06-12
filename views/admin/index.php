@@ -40,13 +40,24 @@
     font-size: 24px;
     cursor: pointer;
 }
+.discount-badge {
+    background-color: #ff6347;
+    color: white;
+    font-weight: bold;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+}
+
 
 </style>
 
 <div id="admin-page">
 <div class="admin-wrapper">
   <div id="sidebar">
-    <button onclick = "loadOrders()">Замовлення</button>
+    <button onclick = "loadOrders()">Заявки</button>
     <?php foreach ($models as $model): ?>
       <button onclick="getTableData('<?= $model ?>')"><?= ucfirst($model) ?></button>
     <?php endforeach; ?>
@@ -94,6 +105,7 @@
         <label>Показати за останні днів:</label>
         <input type="number" id="logsStatsDays" class="form-control" value="7" min="1" max="365">
         <button class="btn btn-primary mt-2" onclick="loadLogsStats()">Показати</button>
+        <button class="btn btn-secondary mt-2" onclick="location.href='/crystal/admin/stats'">Звітність</button>
         <div id="logsStatsChart" class="mt-3"></div>
         <div id="logsMethodChart" class="mb-4"></div>
       </div>

@@ -191,6 +191,18 @@ private array $tableToModel = [
         }
 
         $realTable = $this->modelToTable[$tableName];
+
+        if ($tableName === 'Users' && isset($fields['role'])) 
+        {
+            $user = Core::get()->db->selectOne($realTable, ['id' => intval($id)]);
+            if ($user && $user['username'] === 'vader') 
+            {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Неможливо змінити роль цього користувача']);
+                exit;
+            }
+        }
+
         unset($fields['id']);
 
         Core::get()->db->update($realTable, $fields, ['id' => intval($id)]);
@@ -467,6 +479,12 @@ private array $tableToModel = [
         echo json_encode(['success' => true, 'data' => $data, 'methods' => $methodData]);
         exit;
     }
+
+    public function actionStats()
+    {
+        return $this->render();
+    }
+
 
 
 

@@ -216,7 +216,7 @@ function renderTable(data, tableName, maps = {}) {
                         let valA = a[sortConfig.field];
                         let valB = b[sortConfig.field];
 
-                        const type = sortableFields[sortConfig.field];
+                        let type = sortableFields[sortConfig.field];
 
                         if (type === 'number') {
                             valA = parseFloat(valA);
@@ -231,8 +231,11 @@ function renderTable(data, tableName, maps = {}) {
                             valB = valB?.toString().toLowerCase() ?? '';
                         }
 
-                        if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
-                        if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+                        if (valA < valB)
+                            return sortConfig.direction === 'asc' ? -1 : 1;
+                        if (valA > valB)
+                            return sortConfig.direction === 'asc' ? 1 : -1;
+
                         return 0;
                     });
 
@@ -268,7 +271,12 @@ function renderTable(data, tableName, maps = {}) {
             let input;
             if (key === 'role' && tableName === 'Users') {
                 input = document.createElement('select');
+
+                const isSelf = row.username === 'vader';
+
                 ['user', 'admin'].forEach(optionVal => {
+                    if (isSelf && optionVal === 'user') return;
+
                     let option = document.createElement('option');
                     option.value = optionVal;
                     option.textContent = optionVal;
@@ -276,6 +284,9 @@ function renderTable(data, tableName, maps = {}) {
                         option.selected = true;
                     input.appendChild(option);
                 });
+
+                if (isSelf)
+                    input.disabled = true;
             }
 
             else if (
@@ -748,7 +759,7 @@ async function loadOrders() {
     let statusSelect = document.createElement('select');
     statusSelect.id = 'statusFilter';
     statusSelect.className = 'form-select';
-    ['Усі', 'Обробка', 'Прийнято', 'Готово', 'Відхилено'].forEach(status => {
+    ['Усі', 'Обробка', 'Прийнято', 'Готово', 'Відхилено', 'Прострочені'].forEach(status => {
         let opt = document.createElement('option');
         opt.value = status;
         opt.textContent = status;
@@ -757,9 +768,18 @@ async function loadOrders() {
 
     statusSelect.addEventListener('change', () => {
         let selectedStatus = statusSelect.value;
-        let filtered = selectedStatus === 'Усі'
-            ? allOrders
-            : allOrders.filter(order => order.status === selectedStatus);
+        let filtered;
+        if (selectedStatus === 'Усі') {
+            filtered = allOrders;
+        } else if (selectedStatus === 'Прострочені') {
+            const now = new Date();
+            filtered = allOrders.filter(order =>
+                order.status === 'Прийнято' &&
+                new Date(order.deadline) < now
+            );
+        } else {
+            filtered = allOrders.filter(order => order.status === selectedStatus);
+        }
         renderOrderCards(filtered);
     });
 
@@ -849,23 +869,46 @@ async function updateOrderStatus(id, status) {
 
 function showOrderModal(order) {
     let modalBody = document.getElementById('orderModalBody');
-    modalBody.innerHTML = `
+
+    let html = `
         <img src="${order.image}" style="max-width: 100%; height: auto;"><br><br>
         <strong>Імʼя:</strong> ${order.user_fullname}<br>
         <strong>Телефон:</strong> ${order.user_phone}<br>
         ${order.category_name ? `<strong>Категорія:</strong> ${order.category_name}<br>` : ''}
         ${order.genre_name ? `<strong>Жанр:</strong> ${order.genre_name}<br>` : ''}
+    `;
+
+    if (order.item_name || order.item_code) {
+        html += `<strong>Товар:</strong> `;
+        if (order.item_name) html += `${order.item_name}`;
+        if (order.item_code) html += ` (${order.item_code})`;
+        html += `<br>`;
+    }
+
+    html += `
         <strong>Опис:</strong><br>
         <p>${order.description}</p>
         <strong>Статус:</strong> ${order.status}<br>
         <strong>Створено:</strong> ${order.created_at}<br>
-        <strong>На коли:</strong> ${order.deadline}
-        ${order.discount && order.discount > 0 ? `<div class="discount-badge">Знижка: ${order.discount}%</div><br>` : ''}
-        ${order.accepted_at ? `<br><strong>Прийнято:</strong> ${order.accepted_at}<br>` : ''}
-        ${order.completed_at ? `<strong>Готово:</strong> ${order.completed_at}<br>` : ''}
+        <strong>На коли:</strong> ${order.deadline}<br>
     `;
+
+    if (order.discount && order.discount > 0) {
+        html += `<div class="discount-badge">Знижка: ${order.discount}%</div><br>`;
+    }
+
+    if (order.accepted_at) {
+        html += `<strong>Прийнято:</strong> ${order.accepted_at}<br>`;
+    }
+
+    if (order.completed_at) {
+        html += `<strong>Готово:</strong> ${order.completed_at}<br>`;
+    }
+
+    modalBody.innerHTML = html;
     document.getElementById('orderModal').style.display = 'block';
 }
+
 document.getElementById('orderModal').addEventListener('click', function (event) {
     if (event.target === this) {
         closeOrderModal();
